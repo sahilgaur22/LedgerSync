@@ -1,0 +1,14 @@
+{
+  "model": "TF-IDF (char_wb, ngrams 3-5)",
+  "fitted_on": "gateway_payouts.utr_id",
+  "optimal_threshold": 0.5845,
+  "precision": 0.9579,
+  "recall": 1.0,
+  "f1_score": 0.9785,
+  "confusion_matrix": {
+    "tp": 91,
+    "fp": 4,
+    "tn": 5,
+    "fn": 0
+  }
+}
