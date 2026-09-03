@@ -38,13 +38,19 @@ class MerchantOrder(Base):
     __tablename__ = "merchant_orders"
 
     id = Column(UUIDType, primary_key=True, default=uuid.uuid4)
-    payout_id = Column(UUIDType, ForeignKey("gateway_payouts.id", ondelete="SET NULL"), nullable=True)
+    payout_id = Column(
+        UUIDType, ForeignKey("gateway_payouts.id", ondelete="SET NULL"), nullable=True
+    )
     receipt_id = Column(Text, nullable=False)
     amount_paise = Column(BigInteger, nullable=False)
-    status = Column(Enum(OrderStatus, name="order_status"), nullable=False, default=OrderStatus.PENDING)
+    status = Column(
+        Enum(OrderStatus, name="order_status"), nullable=False, default=OrderStatus.PENDING
+    )
     merchant_id = Column(UUIDType, nullable=False)
     created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
+    updated_at = Column(
+        DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()
+    )
 
     __table_args__ = (
         CheckConstraint("amount_paise > 0", name="chk_merchant_orders_amount_paise"),
@@ -71,9 +77,13 @@ class BankDeposit(Base):
     narrative_hash = Column(Text, nullable=False)
     deposit_amount_paise = Column(BigInteger, nullable=False)
     deposit_date = Column(DateTime(timezone=True), nullable=False, index=True)
-    status = Column(Enum(DepositStatus, name="deposit_status"), nullable=False, default=DepositStatus.UNMATCHED)
+    status = Column(
+        Enum(DepositStatus, name="deposit_status"), nullable=False, default=DepositStatus.UNMATCHED
+    )
     created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
+    updated_at = Column(
+        DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()
+    )
 
     __table_args__ = (
         UniqueConstraint(
@@ -100,7 +110,9 @@ class TaxAndFeeLine(Base):
     __tablename__ = "tax_and_fee_lines"
 
     id = Column(UUIDType, primary_key=True, default=uuid.uuid4)
-    payout_id = Column(UUIDType, ForeignKey("gateway_payouts.id", ondelete="CASCADE"), nullable=False)
+    payout_id = Column(
+        UUIDType, ForeignKey("gateway_payouts.id", ondelete="CASCADE"), nullable=False
+    )
     line_type = Column(Text, nullable=False)
     tax_basis_paise = Column(BigInteger, nullable=False)
     deducted_amount_paise = Column(BigInteger, nullable=False)
@@ -115,8 +127,12 @@ class FinancialAdjustment(Base):
     __tablename__ = "financial_adjustments"
 
     id = Column(UUIDType, primary_key=True, default=uuid.uuid4)
-    payout_id = Column(UUIDType, ForeignKey("gateway_payouts.id", ondelete="CASCADE"), nullable=True)
-    order_id = Column(UUIDType, ForeignKey("merchant_orders.id", ondelete="SET NULL"), nullable=True)
+    payout_id = Column(
+        UUIDType, ForeignKey("gateway_payouts.id", ondelete="CASCADE"), nullable=True
+    )
+    order_id = Column(
+        UUIDType, ForeignKey("merchant_orders.id", ondelete="SET NULL"), nullable=True
+    )
     type = Column(Text, nullable=False)
     deduction_paise = Column(BigInteger, nullable=False)
 
@@ -125,8 +141,12 @@ class ReconciliationJournal(Base):
     __tablename__ = "reconciliation_journal"
 
     id = Column(UUIDType, primary_key=True, default=uuid.uuid4)
-    deposit_id = Column(UUIDType, ForeignKey("bank_deposits.id", ondelete="CASCADE"), nullable=False, unique=True)
-    payout_id = Column(UUIDType, ForeignKey("gateway_payouts.id", ondelete="SET NULL"), nullable=True)
+    deposit_id = Column(
+        UUIDType, ForeignKey("bank_deposits.id", ondelete="CASCADE"), nullable=False, unique=True
+    )
+    payout_id = Column(
+        UUIDType, ForeignKey("gateway_payouts.id", ondelete="SET NULL"), nullable=True
+    )
     engine = Column(Text, nullable=False)
     confidence = Column(Numeric(5, 4), nullable=False)
     created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
@@ -142,10 +162,14 @@ class AuditException(Base):
     ai_hypothesis = Column(Text, nullable=True)
     evidence_refs = Column(JSONType, nullable=True)
     confidence = Column(Numeric(5, 4), nullable=True)
-    status = Column(Enum(ExceptionStatus, name="exception_status"), nullable=False, default=ExceptionStatus.OPEN)
+    status = Column(
+        Enum(ExceptionStatus, name="exception_status"), nullable=False, default=ExceptionStatus.OPEN
+    )
     retry_count = Column(Integer, nullable=False, default=0)
     created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
+    updated_at = Column(
+        DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()
+    )
 
 
 class ReconciliationBatch(Base):

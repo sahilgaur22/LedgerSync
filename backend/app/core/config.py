@@ -6,7 +6,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     PROJECT_NAME: str = "LedgerSync AI"
     DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/ledgersync"
-    READONLY_DATABASE_URL: str = "postgresql://ledgersync_readonly:readonly_pass@localhost:5432/ledgersync"
+    READONLY_DATABASE_URL: str = (
+        "postgresql://ledgersync_readonly:readonly_pass@localhost:5432/ledgersync"
+    )
     ALLOWED_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000"
     GEMINI_API_KEY: str = ""
     SETTLEMENT_WINDOW_DAYS: int = 3

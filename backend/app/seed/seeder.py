@@ -22,9 +22,11 @@ TOTAL_PAYOUTS = 500
 TOTAL_NARRATIVE_MUTATIONS = 75
 TOTAL_FEE_LEAKS = 10
 TOTAL_ADJUSTMENTS = 25
+TOTAL_TAX_VARIANCES = 5
 CONTRACT_MDR_BPS = 180  # 1.8%
 CONTRACT_TAX_BPS = 1800  # 18%
 LEAK_MDR_BPS = 250  # 2.5% (anomalous rate)
+LEAK_TAX_BPS = 2800  # 28% (anomalous tax rate)
 
 
 def compute_narrative_hash(narrative: str) -> str:
@@ -65,6 +67,9 @@ def generate_synthetic_dataset(
 
     # Designate indices for fee leaks (10 fee leaks)
     fee_leak_indices = set(random.sample(range(TOTAL_PAYOUTS), TOTAL_FEE_LEAKS))
+
+    # Designate indices for tax variances (5 tax variances on GST)
+    tax_variance_indices = set(random.sample(range(TOTAL_PAYOUTS), TOTAL_TAX_VARIANCES))
 
     # Designate indices for adjustments (25 adjustments)
     adjustment_payout_indices = set(random.sample(range(TOTAL_PAYOUTS), TOTAL_ADJUSTMENTS))
@@ -115,24 +120,43 @@ def generate_synthetic_dataset(
 
         orders.extend(payout_orders)
 
-        # Expected MDR fee (deterministic basis points math)
-        expected_fee_paise = round(gross_amount_paise * CONTRACT_MDR_BPS / 10000)
-
-        # Injected Fee Leak anomaly for designated 10 payouts
+        # 1. MDR Line (checked against fee_contracts.mdr_rate_bps)
+        expected_mdr_paise = round(gross_amount_paise * CONTRACT_MDR_BPS / 10000)
         if p_idx in fee_leak_indices:
-            deducted_fee_paise = round(gross_amount_paise * LEAK_MDR_BPS / 10000)
+            deducted_mdr_paise = round(gross_amount_paise * LEAK_MDR_BPS / 10000)
         else:
-            deducted_fee_paise = expected_fee_paise
+            deducted_mdr_paise = expected_mdr_paise
 
-        tax_line = TaxAndFeeLine(
+        tax_line_mdr = TaxAndFeeLine(
             id=uuid.uuid4(),
             payout_id=payout_id,
             line_type="MDR",
             tax_basis_paise=gross_amount_paise,
-            deducted_amount_paise=deducted_fee_paise,
-            expected_amount_paise=expected_fee_paise,
+            deducted_amount_paise=deducted_mdr_paise,
+            expected_amount_paise=expected_mdr_paise,
         )
-        tax_lines.append(tax_line)
+        tax_lines.append(tax_line_mdr)
+
+        # 2. GST Line (18% on MDR, checked against fee_contracts.tax_rate_bps)
+        # DESIGN DECISION: GST tax_basis is intentionally set to expected_mdr_paise rather than
+        # deducted_mdr_paise to keep MDR leaks and GST tax variances strictly orthogonal and non-compounding.
+        # This prevents an MDR rate leak from causing a cascading phantom tax variance, ensuring FEE_LEAK
+        # solely reflects MDR rate deviations and TAX_VARIANCE solely reflects tax rate misapplications (e.g. 28% vs 18%).
+        expected_gst_paise = round(expected_mdr_paise * CONTRACT_TAX_BPS / 10000)
+        if p_idx in tax_variance_indices:
+            deducted_gst_paise = round(expected_mdr_paise * LEAK_TAX_BPS / 10000)
+        else:
+            deducted_gst_paise = expected_gst_paise
+
+        tax_line_gst = TaxAndFeeLine(
+            id=uuid.uuid4(),
+            payout_id=payout_id,
+            line_type="GST",
+            tax_basis_paise=expected_mdr_paise,
+            deducted_amount_paise=deducted_gst_paise,
+            expected_amount_paise=expected_gst_paise,
+        )
+        tax_lines.append(tax_line_gst)
 
         # Injected adjustments (25 adjustments total)
         total_adjustment_paise = 0
@@ -150,7 +174,9 @@ def generate_synthetic_dataset(
             adjustments.append(adjustment)
             total_adjustment_paise = adj_amount
 
-        net_payout_paise = gross_amount_paise - deducted_fee_paise - total_adjustment_paise
+        net_payout_paise = (
+            gross_amount_paise - deducted_mdr_paise - deducted_gst_paise - total_adjustment_paise
+        )
 
         payout = GatewayPayout(
             id=payout_id,
@@ -186,9 +212,7 @@ def generate_synthetic_dataset(
                 )
             else:
                 # Partial UTR embedded without slashes
-                raw_narrative = (
-                    f"NEFT CR {payout.utr_id[3:15]} RAZORPAY SOFTWARE PRIVATE LTD SETTL"
-                )
+                raw_narrative = f"NEFT CR {payout.utr_id[3:15]} RAZORPAY SOFTWARE PRIVATE LTD SETTL"
         else:
             # Clean standard bank narrative with exact UTR
             raw_narrative = (

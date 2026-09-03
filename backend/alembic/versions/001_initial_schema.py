@@ -5,6 +5,7 @@ Revises:
 Create Date: 2026-08-01 00:00:00.000000
 
 """
+
 from typing import Sequence, Union
 
 import sqlalchemy as sa
@@ -20,8 +21,22 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     # 1. Enums
     order_status_enum = sa.Enum("PENDING", "SETTLED", "DISPUTED", "REFUNDED", name="order_status")
-    deposit_status_enum = sa.Enum("UNMATCHED", "EXACT_MATCHED", "FUZZY_MATCHED", "SUBSET_MATCHED", "EXCEPTION", name="deposit_status")
-    exception_status_enum = sa.Enum("OPEN", "AI_TRIAGED", "PENDING_HUMAN_REVIEW", "RESOLVED", "ESCALATED", name="exception_status")
+    deposit_status_enum = sa.Enum(
+        "UNMATCHED",
+        "EXACT_MATCHED",
+        "FUZZY_MATCHED",
+        "SUBSET_MATCHED",
+        "EXCEPTION",
+        name="deposit_status",
+    )
+    exception_status_enum = sa.Enum(
+        "OPEN",
+        "AI_TRIAGED",
+        "PENDING_HUMAN_REVIEW",
+        "RESOLVED",
+        "ESCALATED",
+        name="exception_status",
+    )
     resolution_type_enum = sa.Enum("DETERMINISTIC_FINDING", "AI_RESEARCHED", name="resolution_type")
 
     # 2. gateway_payouts
@@ -32,7 +47,12 @@ def upgrade() -> None:
         sa.Column("gross_amount_paise", sa.BigInteger(), nullable=False),
         sa.Column("net_payout_paise", sa.BigInteger(), nullable=False),
         sa.Column("payout_date", sa.DateTime(timezone=True), nullable=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("utr_id"),
     )
@@ -46,12 +66,24 @@ def upgrade() -> None:
         sa.Column("amount_paise", sa.BigInteger(), nullable=False),
         sa.Column("status", order_status_enum, server_default="PENDING", nullable=False),
         sa.Column("merchant_id", sa.Uuid(), nullable=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
-        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
         sa.CheckConstraint("amount_paise > 0", name="chk_merchant_orders_amount_paise"),
         sa.ForeignKeyConstraint(["payout_id"], ["gateway_payouts.id"], ondelete="SET NULL"),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("merchant_id", "receipt_id", name="uq_merchant_orders_merchant_receipt"),
+        sa.UniqueConstraint(
+            "merchant_id", "receipt_id", name="uq_merchant_orders_merchant_receipt"
+        ),
     )
 
     # 4. bank_deposits
@@ -63,10 +95,25 @@ def upgrade() -> None:
         sa.Column("deposit_amount_paise", sa.BigInteger(), nullable=False),
         sa.Column("deposit_date", sa.DateTime(timezone=True), nullable=False),
         sa.Column("status", deposit_status_enum, server_default="UNMATCHED", nullable=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
-        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("narrative_hash", "deposit_amount_paise", "deposit_date", name="uq_bank_deposits_hash_amount_date"),
+        sa.UniqueConstraint(
+            "narrative_hash",
+            "deposit_amount_paise",
+            "deposit_date",
+            name="uq_bank_deposits_hash_amount_date",
+        ),
     )
     op.create_index("idx_bank_deposits_date", "bank_deposits", ["deposit_date"])
 
@@ -77,7 +124,12 @@ def upgrade() -> None:
         sa.Column("merchant_id", sa.Uuid(), nullable=False),
         sa.Column("mdr_rate_bps", sa.Integer(), nullable=False),
         sa.Column("tax_rate_bps", sa.Integer(), nullable=False),
-        sa.Column("effective_from", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        sa.Column(
+            "effective_from",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
         sa.PrimaryKeyConstraint("id"),
     )
 
@@ -90,7 +142,11 @@ def upgrade() -> None:
         sa.Column("tax_basis_paise", sa.BigInteger(), nullable=False),
         sa.Column("deducted_amount_paise", sa.BigInteger(), nullable=False),
         sa.Column("expected_amount_paise", sa.BigInteger(), nullable=False),
-        sa.Column("variance_paise", sa.BigInteger(), sa.Computed("deducted_amount_paise - expected_amount_paise", persisted=True)),
+        sa.Column(
+            "variance_paise",
+            sa.BigInteger(),
+            sa.Computed("deducted_amount_paise - expected_amount_paise", persisted=True),
+        ),
         sa.ForeignKeyConstraint(["payout_id"], ["gateway_payouts.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -116,7 +172,12 @@ def upgrade() -> None:
         sa.Column("payout_id", sa.Uuid(), nullable=True),
         sa.Column("engine", sa.Text(), nullable=False),
         sa.Column("confidence", sa.Numeric(precision=5, scale=4), nullable=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
         sa.ForeignKeyConstraint(["deposit_id"], ["bank_deposits.id"], ondelete="CASCADE"),
         sa.ForeignKeyConstraint(["payout_id"], ["gateway_payouts.id"], ondelete="SET NULL"),
         sa.PrimaryKeyConstraint("id"),
@@ -135,8 +196,18 @@ def upgrade() -> None:
         sa.Column("confidence", sa.Numeric(precision=5, scale=4), nullable=True),
         sa.Column("status", exception_status_enum, server_default="OPEN", nullable=False),
         sa.Column("retry_count", sa.Integer(), server_default="0", nullable=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
-        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
         sa.PrimaryKeyConstraint("id"),
     )
 

@@ -47,20 +47,41 @@ def test_generated_columns_exist():
 
 def test_synthetic_seeder_counts_and_injections():
     """Verify exact seeder specifications: 10,000 orders, 500 payouts, 75 mutations, 10 fee leaks, 25 adjustments."""
-    contract, orders, payouts, tax_lines, adjustments, deposits = generate_synthetic_dataset(seed=42)
+    contract, orders, payouts, tax_lines, adjustments, deposits = generate_synthetic_dataset(
+        seed=42
+    )
 
     # 1. Row counts
     assert len(orders) == TOTAL_ORDERS, f"Expected {TOTAL_ORDERS} orders, got {len(orders)}"
     assert len(payouts) == TOTAL_PAYOUTS, f"Expected {TOTAL_PAYOUTS} payouts, got {len(payouts)}"
-    assert len(tax_lines) == TOTAL_PAYOUTS, f"Expected {TOTAL_PAYOUTS} tax lines, got {len(tax_lines)}"
+    assert len(tax_lines) == TOTAL_PAYOUTS * 2, (
+        f"Expected {TOTAL_PAYOUTS * 2} tax lines, got {len(tax_lines)}"
+    )
+    assert len([t for t in tax_lines if t.line_type == "MDR"]) == TOTAL_PAYOUTS
+    assert len([t for t in tax_lines if t.line_type == "GST"]) == TOTAL_PAYOUTS
     assert len(deposits) == TOTAL_PAYOUTS, f"Expected {TOTAL_PAYOUTS} deposits, got {len(deposits)}"
-    assert len(adjustments) == TOTAL_ADJUSTMENTS, f"Expected {TOTAL_ADJUSTMENTS} adjustments, got {len(adjustments)}"
+    assert len(adjustments) == TOTAL_ADJUSTMENTS, (
+        f"Expected {TOTAL_ADJUSTMENTS} adjustments, got {len(adjustments)}"
+    )
 
-    # 2. Fee leaks count and calculation
-    leaks = [t for t in tax_lines if t.deducted_amount_paise != t.expected_amount_paise]
-    assert len(leaks) == TOTAL_FEE_LEAKS, f"Expected {TOTAL_FEE_LEAKS} fee leaks, got {len(leaks)}"
+    # 2. Fee leaks count and calculation (MDR leaks = 10, GST tax variances = 5)
+    mdr_leaks = [
+        t
+        for t in tax_lines
+        if t.line_type == "MDR" and t.deducted_amount_paise != t.expected_amount_paise
+    ]
+    assert len(mdr_leaks) == TOTAL_FEE_LEAKS, (
+        f"Expected {TOTAL_FEE_LEAKS} MDR fee leaks, got {len(mdr_leaks)}"
+    )
 
-    for leak in leaks:
+    gst_variances = [
+        t
+        for t in tax_lines
+        if t.line_type == "GST" and t.deducted_amount_paise != t.expected_amount_paise
+    ]
+    assert len(gst_variances) == 5, f"Expected 5 GST tax variances, got {len(gst_variances)}"
+
+    for leak in mdr_leaks:
         # Contracted rate is 180 bps, leak rate is 250 bps
         assert leak.deducted_amount_paise > leak.expected_amount_paise
         expected = round(leak.tax_basis_paise * CONTRACT_MDR_BPS / 10000)

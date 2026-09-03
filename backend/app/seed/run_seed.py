@@ -85,7 +85,9 @@ def export_to_csv(output_dir: str = "data"):
         }
         for a in adjustments
     ]
-    pd.DataFrame(adj_data).to_csv(os.path.join(output_dir, "financial_adjustments.csv"), index=False)
+    pd.DataFrame(adj_data).to_csv(
+        os.path.join(output_dir, "financial_adjustments.csv"), index=False
+    )
 
     # Fee Contract CSV
     contract_data = [
@@ -115,10 +117,9 @@ def seed_database():
         db.add(contract)
         db.commit()
 
-        # Add payouts and tax lines
-        for p, t in zip(payouts, tax_lines):
-            db.add(p)
-            db.add(t)
+        # Add payouts and all tax lines
+        db.add_all(payouts)
+        db.add_all(tax_lines)
         db.commit()
 
         # Add orders in chunks
