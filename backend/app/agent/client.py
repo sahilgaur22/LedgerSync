@@ -171,7 +171,7 @@ Provide your forensic hypothesis and evidence_refs in JSON format.
 
         try:
             response = self.client.models.generate_content(
-                model="gemini-3.6-flash",
+                model="gemini-3.5-flash",
                 contents=user_content,
                 config=types.GenerateContentConfig(
                     system_instruction=SYSTEM_PROMPT,
