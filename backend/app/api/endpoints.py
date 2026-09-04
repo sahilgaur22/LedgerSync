@@ -52,9 +52,8 @@ def ingest_and_reconcile(db: Session = Depends(get_db)):
     deposits = db.scalars(select(BankDeposit).order_by(BankDeposit.deposit_date)).all()
     total_rows = len(deposits)
 
-    # Initialize fresh run
-    db.execute(text("DELETE FROM reconciliation_journal"))
-    db.execute(text("DELETE FROM audit_exceptions"))
+    # Initialize fresh run for automated engines while preserving human overrides
+    db.execute(text("DELETE FROM reconciliation_journal WHERE engine != 'MANUAL_OVERRIDE'"))
     for dep in deposits:
         dep.status = DepositStatus.UNMATCHED
     db.commit()
@@ -93,12 +92,15 @@ def ingest_and_reconcile(db: Session = Depends(get_db)):
         db.add_all(subset_journals)
         db.commit()
 
-    # 4. Route unresolved deposits to audit_exceptions
-    existing_exc_sources = set(db.scalars(select(AuditException.source_id)).all())
+    # 4. Route genuinely NEW unresolved deposits to audit_exceptions
+    # Existing researched hypotheses and human decisions are preserved to protect API quota
+    existing_exc_map = {
+        exc.source_id: exc for exc in db.scalars(select(AuditException)).all()
+    }
     new_ai_exceptions = []
 
     for dep in unresolved_deposits:
-        if dep.id not in existing_exc_sources:
+        if dep.id not in existing_exc_map:
             exc = AuditException(
                 source_id=dep.id,
                 type="UNMATCHED_DEPOSIT",
@@ -114,14 +116,17 @@ def ingest_and_reconcile(db: Session = Depends(get_db)):
                 status=ExceptionStatus.OPEN,
             )
             new_ai_exceptions.append(exc)
+        else:
+            dep.status = DepositStatus.EXCEPTION
 
     if new_ai_exceptions:
         db.add_all(new_ai_exceptions)
         db.commit()
-
-    # Process AI exceptions through ExceptionRouter
-    exception_router = ExceptionRouter(db)
-    exception_router.process_all_open_exceptions()
+        # ONLY invoke AI research for genuinely new exceptions
+        exception_router = ExceptionRouter(db)
+        for exc in new_ai_exceptions:
+            exception_router.route_and_process_exception(exc)
+        db.commit()
 
     # 5. Deterministic Fee Critic
     critic = DeterministicFeeCritic(db)
