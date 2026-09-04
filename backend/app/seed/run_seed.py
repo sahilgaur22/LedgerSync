@@ -111,9 +111,16 @@ def export_to_csv(output_dir: str = "data"):
 
 
 def seed_database():
-    contract, orders, payouts, tax_lines, adjustments, deposits = generate_synthetic_dataset()
     db = SessionLocal()
     try:
+        from sqlalchemy import func, select
+        from backend.app.models.models import BankDeposit
+        existing_count = db.scalar(select(func.count(BankDeposit.id))) or 0
+        if existing_count >= 500:
+            print(f"Database already seeded ({existing_count} deposits found). Skipping seed.")
+            return
+
+        contract, orders, payouts, tax_lines, adjustments, deposits = generate_synthetic_dataset()
         db.add(contract)
         db.commit()
 
