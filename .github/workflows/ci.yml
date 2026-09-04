@@ -48,9 +48,17 @@ jobs:
         run: |
           alembic -c backend/alembic.ini upgrade head
 
+      - name: Seed database
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/ledgersync
+          PYTHONPATH: .
+        run: |
+          python -c "from backend.app.seed.run_seed import seed_database; seed_database()"
+
       - name: Run Pytest suite
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/ledgersync
+          PYTHONPATH: .
         run: |
           pytest -v
 

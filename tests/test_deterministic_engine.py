@@ -43,13 +43,14 @@ def test_exact_match_engine(db):
     dep_ids = [d.id for d in clean_deposits]
     for d in clean_deposits:
         d.status = DepositStatus.UNMATCHED
-    db.execute(select(ReconciliationJournal).where(ReconciliationJournal.deposit_id.in_(dep_ids)))
-    db.execute(
-        text("DELETE FROM reconciliation_journal WHERE deposit_id IN :ids").bindparams(
-            ids=tuple(dep_ids)
+    if dep_ids:
+        db.execute(select(ReconciliationJournal).where(ReconciliationJournal.deposit_id.in_(dep_ids)))
+        db.execute(
+            text("DELETE FROM reconciliation_journal WHERE deposit_id IN :ids").bindparams(
+                ids=tuple(dep_ids)
+            )
         )
-    )
-    db.commit()
+        db.commit()
 
     engine = ExactMatchEngine(db)
     journals, unmatched = engine.reconcile_exact(clean_deposits)
