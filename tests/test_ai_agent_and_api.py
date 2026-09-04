@@ -150,7 +150,22 @@ def test_fastapi_endpoints(client):
     assert res_exc.status_code == 200
     assert isinstance(res_exc.json(), list)
 
-    # 4. Developer breaker trip & reset
+    # 4. Deposits list (paginated)
+    res_deposits = client.get("/api/deposits?page=1&page_size=10")
+    assert res_deposits.status_code == 200
+    dep_data = res_deposits.json()
+    assert "total" in dep_data
+    assert "page" in dep_data
+    assert "deposits" in dep_data
+    assert len(dep_data["deposits"]) <= 10
+    if dep_data["deposits"]:
+        first = dep_data["deposits"][0]
+        assert "id" in first
+        assert "deposit_amount_inr" in first
+        assert "narrative_raw" in first
+        assert "status" in first
+
+    # 5. Developer breaker trip & reset
     res_trip = client.post("/api/circuit-breaker/trip")
     assert res_trip.status_code == 200
     assert res_trip.json()["state"] == "OPEN"

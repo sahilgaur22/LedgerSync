@@ -330,6 +330,72 @@ def perform_exception_action(
     }
 
 
+@router.get("/deposits")
+def list_deposits(
+    page: int = 1,
+    page_size: int = 50,
+    status: Optional[str] = None,
+    search: Optional[str] = None,
+    db: Session = Depends(get_db),
+):
+    """
+    Paginated master ledger deposit listings with joined reconciliation journal matches.
+    """
+    page = max(1, page)
+    page_size = min(max(1, page_size), 200)
+
+    query = (
+        select(
+            BankDeposit,
+            ReconciliationJournal.engine.label("engine"),
+            ReconciliationJournal.confidence.label("confidence"),
+            GatewayPayout.utr_id.label("matched_utr"),
+            GatewayPayout.id.label("matched_payout_id"),
+        )
+        .outerjoin(ReconciliationJournal, BankDeposit.id == ReconciliationJournal.deposit_id)
+        .outerjoin(GatewayPayout, ReconciliationJournal.payout_id == GatewayPayout.id)
+    )
+
+    if status:
+        query = query.where(BankDeposit.status == status)
+    if search:
+        query = query.where(BankDeposit.narrative_raw.ilike(f"%{search}%"))
+
+    count_sub = query.subquery()
+    total = db.scalar(select(func.count()).select_from(count_sub)) or 0
+
+    query = (
+        query.order_by(BankDeposit.deposit_date.asc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    )
+    rows = db.execute(query).all()
+
+    items = []
+    for dep, engine, confidence, matched_utr, matched_payout_id in rows:
+        items.append(
+            {
+                "id": str(dep.id),
+                "deposit_date": dep.deposit_date.isoformat(),
+                "deposit_amount_paise": dep.deposit_amount_paise,
+                "deposit_amount_inr": round(dep.deposit_amount_paise / 100.0, 2),
+                "narrative_raw": dep.narrative_raw,
+                "status": dep.status.value if hasattr(dep.status, "value") else str(dep.status),
+                "engine": engine,
+                "matched_utr": matched_utr,
+                "matched_payout_id": str(matched_payout_id) if matched_payout_id else None,
+                "confidence": float(confidence) if confidence is not None else None,
+            }
+        )
+
+    return {
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "deposits": items,
+    }
+
+
 @router.get("/metrics")
 def get_model_metrics():
     """
