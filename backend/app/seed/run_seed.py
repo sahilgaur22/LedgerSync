@@ -114,6 +114,7 @@ def seed_database():
     db = SessionLocal()
     try:
         from sqlalchemy import func, select
+
         from backend.app.models.models import BankDeposit
         existing_count = db.scalar(select(func.count(BankDeposit.id))) or 0
         if existing_count >= 500:
