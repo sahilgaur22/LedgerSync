@@ -8,7 +8,7 @@ import { ExceptionWorkspace, ExceptionItem } from "@/components/ExceptionWorkspa
 import { MasterLedgerTable } from "@/components/MasterLedgerTable";
 import { Footer } from "@/components/Footer";
 
-const API_BASE = "http://127.0.0.1:8000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export default function DashboardPage() {
   const [circuitState, setCircuitState] = useState<string>("CLOSED");

@@ -49,7 +49,8 @@ export const MasterLedgerTable: React.FC<MasterLedgerTableProps> = () => {
       if (st) params.append("status", st);
       if (srch) params.append("search", srch);
 
-      const res = await fetch(`http://127.0.0.1:8000/api/deposits?${params.toString()}`);
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const res = await fetch(`${apiBase}/api/deposits?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to fetch deposits");
       const data = await res.json();
       setDeposits(data.deposits || []);
