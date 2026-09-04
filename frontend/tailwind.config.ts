@@ -10,22 +10,23 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "#080c14",
-        card: "#0f172a",
-        "card-muted": "#1e293b",
-        border: "#1e293b",
-        primary: {
-          DEFAULT: "#3b82f6",
-          hover: "#2563eb",
-          foreground: "#ffffff",
+        background: "#ffffff",
+        navy: {
+          DEFAULT: "#003366",
+          dark: "#002244",
         },
-        accent: {
-          emerald: "#10b981",
-          amber: "#f59e0b",
-          rose: "#f43f5e",
-          indigo: "#6366f1",
-          cyan: "#06b6d4",
+        brand: {
+          navy: "#003366",
+          medium: "#00509e",
+          bright: "#007acc",
+          light: "#66a3ff",
+          pale: "#cce0ff",
+          subtle: "#f4f8ff",
         },
+      },
+      fontFamily: {
+        sans: ["var(--font-inter)", "Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
+        mono: ["var(--font-mono)", "JetBrains Mono", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "monospace"],
       },
     },
   },

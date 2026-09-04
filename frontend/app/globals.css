@@ -3,29 +3,34 @@
 @tailwind utilities;
 
 :root {
-  --background: #070a13;
-  --foreground: #f8fafc;
+  --background: #ffffff;
+  --foreground: #003366;
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Custom subtle scrollbar */
+/* Restrained Financial Terminal Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0a0f1d;
+  background: #f4f8ff;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
-  border-radius: 3px;
+  background: #cce0ff;
+  border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #66a3ff;
+}
+
+/* Crisp 1px borders & zero-shadow discipline */
+* {
+  border-color: #cce0ff;
 }

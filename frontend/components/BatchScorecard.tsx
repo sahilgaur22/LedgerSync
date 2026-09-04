@@ -1,16 +1,7 @@
 "use client";
 
 import React from "react";
-import {
-  TrendingUp,
-  Target,
-  Sparkles,
-  Layers,
-  FileCheck2,
-  AlertOctagon,
-  Scale,
-  CheckCircle,
-} from "lucide-react";
+import { Scale, CheckCircle2 } from "lucide-react";
 
 interface ScorecardData {
   total_deposits: number;
@@ -58,7 +49,6 @@ export const BatchScorecard: React.FC<BatchScorecardProps> = ({
   const unresolved = scorecard?.breakdown?.unresolved_ai_researched ?? 15;
   const matched = scorecard?.matched_deposits ?? (exact + fuzzy + subset);
 
-
   const exactPct = total > 0 ? ((exact / total) * 100).toFixed(1) : "85.0";
   const fuzzyPct = total > 0 ? ((fuzzy / total) * 100).toFixed(1) : "10.0";
   const subsetPct = total > 0 ? ((subset / total) * 100).toFixed(1) : "2.0";
@@ -71,136 +61,109 @@ export const BatchScorecard: React.FC<BatchScorecardProps> = ({
   const recall = metrics?.recall ? (metrics.recall * 100).toFixed(1) : "97.4";
 
   return (
-    <section className="mb-8">
+    <section className="mb-6">
       {/* Section Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-3 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-            <Layers className="h-5 w-5 text-blue-400" />
+          <h2 className="text-sm font-semibold tracking-tight text-[#003366]">
             Executive Batch Scorecard
-          </h1>
-          <p className="text-xs text-slate-400">
-            Real-time throughput, measured engine accuracy, and strict accounting isolation
+          </h2>
+          <p className="text-xs text-[#00509e]">
+            Continuous reconciliation metrics, multi-engine cascade throughput, and contractual fee isolation
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 flex items-center gap-1.5">
-            <CheckCircle className="h-3 w-3" />
-            PostgreSQL Stored Generated Metric
-          </span>
+        <div className="flex items-center gap-1.5 text-xs text-[#00509e]">
+          <CheckCircle2 className="h-3.5 w-3.5 text-[#00509e]" />
+          <span>PostgreSQL Live Ingestion Audit</span>
         </div>
       </div>
 
-      {/* Headline Metric Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* 4 Clean Architectural Metric Cards */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Card 1: Deposit Match Rate */}
-        <div className="relative overflow-hidden rounded-xl border border-slate-800 bg-gradient-to-b from-slate-900/90 to-slate-950 p-5 shadow-lg">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Deposit Match Rate
-            </span>
-            <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              <TrendingUp className="h-4 w-4" />
-            </div>
+        <div className="border border-[#cce0ff] bg-white p-4">
+          <div className="mb-2 text-xs font-medium text-[#00509e]">
+            Deposit match rate
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold tracking-tight text-white">
+            <span className="font-mono text-2xl font-semibold tracking-tight text-[#007acc] tabular-nums">
               {matchRatePct}
             </span>
-            <span className="text-xs font-medium text-slate-400">
-              ({matched} / {total} deposits)
+            <span className="font-mono text-xs text-[#00509e] tabular-nums">
+              ({matched} / {total})
             </span>
           </div>
-          <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
-            <span className="text-slate-400">Total Unresolved:</span>
-            <span className="font-semibold text-amber-400">{unresolved} Exceptions</span>
+          <div className="mt-3 flex items-center justify-between border-t border-[#cce0ff] pt-2.5 text-xs">
+            <span className="text-[#00509e]">Total unresolved:</span>
+            <span className="font-mono font-medium text-[#003366] tabular-nums">
+              {unresolved} exceptions
+            </span>
           </div>
         </div>
 
-        {/* Card 2: Multi-Engine Breakdown */}
-        <div className="relative overflow-hidden rounded-xl border border-slate-800 bg-gradient-to-b from-slate-900/90 to-slate-950 p-5 shadow-lg">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Engine Breakdown
-            </span>
-            <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20">
-              <FileCheck2 className="h-4 w-4" />
-            </div>
+        {/* Card 2: Multi-Engine Cascade Breakdown */}
+        <div className="border border-[#cce0ff] bg-white p-4">
+          <div className="mb-2 text-xs font-medium text-[#00509e]">
+            Engine cascade breakdown
           </div>
-          <div className="space-y-1.5 text-xs">
-            <div className="flex justify-between items-center">
-              <span className="text-slate-300 flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
-                Exact Engine:
-              </span>
-              <span className="font-semibold text-white">{exact} ({exactPct}%)</span>
+          <div className="space-y-1.5 font-mono text-xs tabular-nums text-[#003366]">
+            <div className="flex items-center justify-between">
+              <span className="text-[#00509e]">Exact match:</span>
+              <span className="font-medium">{exact} ({exactPct}%)</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-slate-300 flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-cyan-400"></span>
-                TF-IDF Fuzzy:
-              </span>
-              <span className="font-semibold text-white">{fuzzy} ({fuzzyPct}%)</span>
+            <div className="flex items-center justify-between">
+              <span className="text-[#00509e]">Fuzzy text match:</span>
+              <span className="font-medium">{fuzzy} ({fuzzyPct}%)</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-slate-300 flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-indigo-400"></span>
-                Subset-Sum DP:
-              </span>
-              <span className="font-semibold text-white">{subset} ({subsetPct}%)</span>
+            <div className="flex items-center justify-between">
+              <span className="text-[#00509e]">Subset-sum solver:</span>
+              <span className="font-medium">{subset} ({subsetPct}%)</span>
             </div>
           </div>
         </div>
 
         {/* Card 3: Measured Model Accuracy */}
-        <div className="relative overflow-hidden rounded-xl border border-slate-800 bg-gradient-to-b from-slate-900/90 to-slate-950 p-5 shadow-lg">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Measured Engine Accuracy
-            </span>
-            <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-              <Target className="h-4 w-4" />
+        <div className="border border-[#cce0ff] bg-white p-4">
+          <div className="mb-2 text-xs font-medium text-[#00509e]">
+            Measured model accuracy
+          </div>
+          <div className="grid grid-cols-2 gap-2 font-mono tabular-nums">
+            <div className="border border-[#cce0ff] bg-[#f4f8ff] p-2">
+              <div className="text-[11px] text-[#00509e]">Precision</div>
+              <div className="text-base font-semibold text-[#003366]">{precision}%</div>
+            </div>
+            <div className="border border-[#cce0ff] bg-[#f4f8ff] p-2">
+              <div className="text-[11px] text-[#00509e]">Recall</div>
+              <div className="text-base font-semibold text-[#003366]">{recall}%</div>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-2 mt-1">
-            <div className="rounded-lg bg-slate-950/60 p-2 border border-slate-800">
-              <p className="text-[10px] uppercase font-bold text-slate-400">Precision</p>
-              <p className="text-lg font-bold text-indigo-300">{precision}%</p>
-            </div>
-            <div className="rounded-lg bg-slate-950/60 p-2 border border-slate-800">
-              <p className="text-[10px] uppercase font-bold text-slate-400">Recall</p>
-              <p className="text-lg font-bold text-indigo-300">{recall}%</p>
-            </div>
-          </div>
-          <div className="mt-3 text-[11px] text-slate-400 flex items-center justify-between">
-            <span>ROC Operating Point:</span>
-            <span className="font-semibold text-slate-300">τ = 0.4000</span>
+          <div className="mt-2.5 flex items-center justify-between border-t border-[#cce0ff] pt-2 text-[11px] text-[#00509e]">
+            <span>Operating threshold:</span>
+            <span className="font-mono text-[#003366]">τ = 0.4000</span>
           </div>
         </div>
 
-        {/* Card 4: Fee Critic Leaks (Deterministic Math) */}
-        <div className="relative overflow-hidden rounded-xl border border-amber-900/30 bg-gradient-to-b from-amber-950/20 via-slate-900/90 to-slate-950 p-5 shadow-lg">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold uppercase tracking-wider text-amber-400">
-              Deterministic Fee Critic
+        {/* Card 4: Fee Critic Leaks (Deterministic Contract Math) */}
+        <div className="border border-[#cce0ff] bg-white p-4">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-xs font-medium text-[#00509e]">
+              Deterministic fee critic
             </span>
-            <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
-              <Scale className="h-4 w-4" />
-            </div>
+            <span className="border border-[#cce0ff] bg-[#f4f8ff] px-1.5 py-0.5 text-[10px] font-medium text-[#003366]">
+              0% ML (pure math)
+            </span>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold tracking-tight text-amber-300">
+            <span className="font-mono text-2xl font-semibold tracking-tight text-[#003366] tabular-nums">
               {totalLeaks}
             </span>
-            <span className="text-xs font-medium text-slate-400">
-              Contract Leaks Flagged
+            <span className="text-xs text-[#00509e]">
+              contract variances flagged
             </span>
           </div>
-          <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
-            <span className="text-slate-400">{mdrLeaks} MDR Leaks • {gstVariances} GST Taxes</span>
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20">
-              0% ML
-            </span>
+          <div className="mt-3 flex items-center justify-between border-t border-[#cce0ff] pt-2.5 font-mono text-xs tabular-nums text-[#00509e]">
+            <span>MDR leaks: {mdrLeaks}</span>
+            <span>Tax variances: {gstVariances}</span>
           </div>
         </div>
       </div>

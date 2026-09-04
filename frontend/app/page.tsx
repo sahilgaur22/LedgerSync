@@ -6,6 +6,7 @@ import { BatchScorecard } from "@/components/BatchScorecard";
 import { TelemetryFunnel } from "@/components/TelemetryFunnel";
 import { ExceptionWorkspace, ExceptionItem } from "@/components/ExceptionWorkspace";
 import { MasterLedgerTable } from "@/components/MasterLedgerTable";
+import { Footer } from "@/components/Footer";
 
 const API_BASE = "http://127.0.0.1:8000";
 
@@ -130,8 +131,8 @@ export default function DashboardPage() {
   const unresolved = scorecardData?.breakdown?.unresolved_ai_researched ?? 15;
 
   return (
-    <div className="min-h-screen bg-[#070a13] text-slate-100 pb-16">
-      {/* Top Navigation Bar */}
+    <div className="flex min-h-screen flex-col bg-white text-[#003366]">
+      {/* Consolidated Top Navigation Header */}
       <Navbar
         circuitState={circuitState}
         onTripBreaker={handleTripBreaker}
@@ -141,7 +142,7 @@ export default function DashboardPage() {
       />
 
       {/* Main Dashboard Container */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 lg:px-8 pt-6">
         {/* Section 1: Executive Batch Scorecard */}
         <BatchScorecard
           scorecard={scorecardData}
@@ -167,6 +168,9 @@ export default function DashboardPage() {
         {/* Section 4: Master Bank Ledger Table */}
         <MasterLedgerTable />
       </main>
+
+      {/* Institutional Dashboard Footer */}
+      <Footer />
     </div>
   );
 }
