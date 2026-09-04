@@ -1,14 +1,17 @@
 {
   "model": "TF-IDF (char_wb, ngrams 3-5)",
   "fitted_on": "gateway_payouts.utr_id",
-  "optimal_threshold": 0.5845,
-  "precision": 0.9579,
-  "recall": 1.0,
-  "f1_score": 0.9785,
+  "population": "mutated_deposits_reaching_fuzzy_engine",
+  "population_count": 75,
+  "optimal_threshold": 0.4,
+  "operating_threshold": 0.4,
+  "precision": 1.0,
+  "recall": 0.6667,
+  "f1_score": 0.8,
   "confusion_matrix": {
-    "tp": 91,
-    "fp": 4,
-    "tn": 5,
-    "fn": 0
+    "tp": 50,
+    "fp": 0,
+    "tn": 0,
+    "fn": 25
   }
 }

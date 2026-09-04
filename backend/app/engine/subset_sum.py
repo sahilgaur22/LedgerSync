@@ -40,7 +40,7 @@ def solve_subset_sum_dp(
     sorted_candidates = sorted(candidates, key=lambda x: x[1], reverse=True)
 
     for oid, amount in sorted_candidates:
-        if time.perf_counter() - start_time > timeout_sec:
+        if time.perf_counter() - start_time > timeout_sec or len(dp) > 50000:
             raise SubsetSumTimeoutError("DP search exceeded timeout")
 
         if amount > target_paise:
@@ -48,7 +48,10 @@ def solve_subset_sum_dp(
 
         # Check existing sums
         new_entries: Dict[int, Tuple[uuid.UUID, ...]] = {}
-        for prev_sum, path in dp.items():
+        for prev_sum, path in list(dp.items()):
+            if (len(new_entries) & 511 == 0) and (time.perf_counter() - start_time > timeout_sec):
+                raise SubsetSumTimeoutError("DP search exceeded timeout")
+
             new_sum = prev_sum + amount
             if new_sum == target_paise:
                 return list(path + (oid,))

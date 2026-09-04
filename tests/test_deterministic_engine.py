@@ -43,10 +43,12 @@ def test_exact_match_engine(db):
     dep_ids = [d.id for d in clean_deposits]
     for d in clean_deposits:
         d.status = DepositStatus.UNMATCHED
+    db.execute(select(ReconciliationJournal).where(ReconciliationJournal.deposit_id.in_(dep_ids)))
     db.execute(
-        select(ReconciliationJournal).where(ReconciliationJournal.deposit_id.in_(dep_ids))
+        text("DELETE FROM reconciliation_journal WHERE deposit_id IN :ids").bindparams(
+            ids=tuple(dep_ids)
+        )
     )
-    db.execute(text("DELETE FROM reconciliation_journal WHERE deposit_id IN :ids").bindparams(ids=tuple(dep_ids)))
     db.commit()
 
     engine = ExactMatchEngine(db)
@@ -99,7 +101,7 @@ def test_subset_sum_timeout_fallback():
     assert no_match is None
 
 
-def test_tfidf_fuzzy_matcher_fits_only_on_utr(db):
+def test_tfidf_fuzzy_matcher_fits_only_on_utr(db, tmp_path):
     """Verify TF-IDF vectorizer fits strictly on gateway_payouts.utr_id and exports metrics.json."""
     matcher = TfidfFuzzyMatcher(db)
     matcher.fit_on_payout_utrs()
@@ -120,10 +122,11 @@ def test_tfidf_fuzzy_matcher_fits_only_on_utr(db):
     assert payout is not None
     assert score > 0.0
 
-    # Train and export metrics.json
+    # Train and export test metrics
+    test_metrics_path = str(tmp_path / "metrics.json")
     deposits = db.scalars(select(BankDeposit).limit(100)).all()
-    metrics = matcher.train_and_export_metrics(deposits, output_path="metrics.json")
-    assert os.path.exists("metrics.json")
+    metrics = matcher.train_and_export_metrics(deposits, output_path=test_metrics_path)
+    assert os.path.exists(test_metrics_path)
     assert metrics["fitted_on"] == "gateway_payouts.utr_id"
     assert "optimal_threshold" in metrics
     assert "precision" in metrics
